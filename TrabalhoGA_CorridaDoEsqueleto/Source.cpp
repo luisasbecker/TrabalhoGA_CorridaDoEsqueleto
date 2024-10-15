@@ -56,6 +56,7 @@ int setupShader();
 int setupGeometry();
 int loadTexture(string filePath, int &imgWidth, int &imgHeight);
 void drawSprite(Sprite spr, GLuint shaderID);
+void updateWindowTitle(GLFWwindow* window, int score);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
 //const GLuint WIDTH = 800, HEIGHT = 600;
@@ -92,6 +93,7 @@ float vel = 1.0;
 float animationTime = 0.0f;
 float frameDuration = 0.1f;
 int currentFrame = 0; 
+int score = 0;
 
 // Estrutura para objetos caindo (moedas e obstáculos)
 struct FallingObject
@@ -370,7 +372,9 @@ int main()
 		// Verifica colisão com moedas
 		if (obj.isCoin && checkCollision(character, obj) && obj.isVisible)
 		{
-			obj.isVisible = false;
+			obj.isVisible = false;  // Hide the coin after collecting
+    		score++;  // Increment the score
+    		updateWindowTitle(window, score);  // Update the window title with the new score
 		}
 
 		// Verifica colisão com lapides
@@ -595,3 +599,7 @@ void drawSprite(Sprite spr, GLuint shaderID)
 
 }
 
+void updateWindowTitle(GLFWwindow* window, int score) {
+    std::string title = "Corrida do Esqueleto - Score: " + std::to_string(score);
+    glfwSetWindowTitle(window, title.c_str());
+}
