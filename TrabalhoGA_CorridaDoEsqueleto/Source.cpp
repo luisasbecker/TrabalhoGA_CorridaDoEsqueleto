@@ -236,7 +236,11 @@ int main()
 
 	// Aqui, as dimensões do background devem ser definidas usando o tamanho real da imagem
 	background.dimensions = vec3((float)imgWidth, (float)imgHeight, 1.0);  // Usando as dimensões reais da textura
-	
+	background.position = vec3(0.0, 0.0, 0.0);  // Posiciona no canto inferior esquerdo inicialmente
+
+	float backgroundSpeed = 200.0f;  // Velocidade do background
+	float backgroundOffset = 0.0f;   // Controla o deslocamento horizontal do background
+
 	character.VAO = setupGeometry();
 	character.texID = loadTexture("../TrabalhoGA_ CorridaDoEsqueleto/Sprites/centro.png",imgWidth,imgHeight);
 	GLuint textureFrames[4];  // <-- Novas texturas para animação
@@ -314,11 +318,24 @@ int main()
 			character.texID = textureFrames[0];
 		}
 
+	// Atualiza a textura do personagem com o frame atual
+    	character.texID = textureFrames[currentFrame];
+
+        // Atualiza o deslocamento do background para a esquerda
+    	backgroundOffset -= backgroundSpeed * deltaTime;
+    	if (backgroundOffset <= -background.dimensions.x) {
+        	backgroundOffset = 0.0f;  // Reinicia o offset quando o fundo passa da tela
+   		}
+
     // Limpa o buffer de cor
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Desenha o primeiro background na posição atual (offset)
-    	background.position = vec3(0.0, 0.0, 0.0);  // Posiciona no canto inferior esquerdo inicialmente
+    	background.position.x = backgroundOffset;  // Posiciona no canto inferior esquerdo inicialmente
+    	drawSprite(background, shaderID);
+
+	// Desenha a segunda cópia do background ao lado da primeira para continuidade
+    	background.position.x = backgroundOffset + background.dimensions.x;
     	drawSprite(background, shaderID);
 
 	// Atualiza queda de objetos
@@ -357,13 +374,14 @@ int main()
 		}
 
 		// Verifica colisão com lapides
-		if (!obj.isCoin && checkCollision(character, obj))
+		if (!obj.isCoin && checkCollision(character, obj)) 
 		{
-			std::cout << "GAME OVER!" << std::endl;
+    		std::cout << "GAME OVER!" << std::endl;
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 	}
 
+	
     // Checa se houveram eventos de input e chama as funções de callback
 		glfwPollEvents();
 
@@ -375,12 +393,12 @@ int main()
 		// Troca os buffers da tela
 		glfwSwapBuffers(window);
 	}
-	// Pede pra OpenGL desalocar os buffers
-	//glDeleteVertexArrays(1, background.VAO);
+
 	// Finaliza a execução da GLFW, limpando os recursos alocados por ela
 	glfwTerminate();
 	return 0;
 }
+
 
 // Função de callback de teclado - só pode ter uma instância (deve ser estática se
 // estiver dentro de uma classe) - É chamada sempre que uma tecla for pressionada
@@ -576,3 +594,4 @@ void drawSprite(Sprite spr, GLuint shaderID)
 	glBindVertexArray(0); //Desconectando o buffer de geometria
 
 }
+
