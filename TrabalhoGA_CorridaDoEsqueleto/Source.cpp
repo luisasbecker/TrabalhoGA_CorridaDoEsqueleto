@@ -7,7 +7,7 @@
  * Tema: Corrida do Esqueleto
  * 
  * Objetivo: O Esqueleto deve desviar e evitar dos 
- * obstáculos que estão caindo do topo da tela..
+ * obstáculos que estão caindo do topo da tela.
  * 
  * Professora: Rossana Baptista
  * 
@@ -87,7 +87,11 @@ const GLchar* fragmentShaderSource = "#version 400\n"
 
 enum directions { NONE, LEFT, RIGHT};
 int dir = NONE;
-float vel = 0.5;
+float vel = 1.0;
+
+float animationTime = 0.0f;
+float frameDuration = 0.1f;
+int currentFrame = 0; 
 
 // Estrutura para objetos caindo (moedas e obstáculos)
 struct FallingObject
@@ -227,13 +231,9 @@ int main()
 
 	// Aqui, as dimensões do background devem ser definidas usando o tamanho real da imagem
 	background.dimensions = vec3((float)imgWidth, (float)imgHeight, 1.0);  // Usando as dimensões reais da textura
-	background.position = vec3(0.0, 0.0, 0.0);  // Posiciona no canto inferior esquerdo inicialmente
-
-	float backgroundSpeed = 10.0f;  // Velocidade do background
-	float backgroundOffset = 0.0f;   // Controla o deslocamento horizontal do background
-
-	//character.VAO = setupGeometry();
-	//character.texID = loadTexture("../TrabalhoGA_ CorridaDoEsqueleto/Sprites/centro.png",imgWidth,imgHeight);
+	
+	character.VAO = setupGeometry();
+	character.texID = loadTexture("../TrabalhoGA_ CorridaDoEsqueleto/Sprites/centro.png",imgWidth,imgHeight);
 	GLuint textureFrames[4];  // <-- Novas texturas para animação
 	textureFrames[0] = loadTexture("../Sprites/centro.png", imgWidth, imgHeight);  // primeira textura
 	textureFrames[1] = loadTexture("../Sprites/esquerda.png", imgWidth, imgHeight); // segunda textura
@@ -290,21 +290,30 @@ int main()
     	float deltaTime = currentTime - lastFrameTime;  // Tempo desde o último frame
     	lastFrameTime = currentTime;
 
+	// Atualiza animação do personagem ao se mover
+		if (dir != NONE)
+		{
+			animationTime += deltaTime;
 
-    // Atualiza a textura do personagem com o frame atual
-    	character.texID = textureFrames[currentFrame];
+			if (animationTime >= frameDuration)
+			{
+				// Alterna texturas
+				currentFrame = (currentFrame + 1) % 4;
+				character.texID = textureFrames[currentFrame]; // Atualiza a textura do personagem
 
-        // Atualiza o deslocamento do background para a esquerda
-    	backgroundOffset -= backgroundSpeed * deltaTime;
-    	if (backgroundOffset <= -background.dimensions.x) {
-        	backgroundOffset = 0.0f;  // Reinicia o offset quando o fundo passa da tela
-   	 }
+				// Reseta tempo de animação
+				animationTime = 0.0f;
+			}
+		} else {
+			// Se não mover, personagem volta para "centro"
+			character.texID = textureFrames[0];
+		}
 
     // Limpa o buffer de cor
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Desenha o primeiro background na posição atual (offset)
-    	background.position.x = backgroundOffset;
+    	background.position = vec3(0.0, 0.0, 0.0);  // Posiciona no canto inferior esquerdo inicialmente
     	drawSprite(background, shaderID);
 
 	// Atualiza queda de objetos
@@ -335,7 +344,6 @@ int main()
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 	}
-
 
     // Checa se houveram eventos de input e chama as funções de callback
 		glfwPollEvents();
