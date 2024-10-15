@@ -100,6 +100,7 @@ struct FallingObject
 	bool isCoin; // Verifica se é moeda ou obstáculo
 	float fallSpeed; // Velocidade de queda
 	int currentFrame; // Frame atual para animação de moedas
+	bool isVisible; // Indica se é visivel ou não
 };
 
 // Vetores para armazenas objetos
@@ -118,6 +119,7 @@ void initFallingObjects(int numObjects, GLuint coinTexture, GLuint obstacleTextu
         obj.isCoin = (i % 2 == 0);  // Alterna entre moedas e obstáculos
         obj.fallSpeed = 100.0f + (rand() % 200);  // Velocidade de queda aleatória
         obj.currentFrame = 0;  // Inicia o frame atual como 0
+		obj.isVisible = true;
         
         obj.sprite.VAO = setupGeometry();
         obj.sprite.texID = obj.isCoin ? coinTexture : obstacleTexture;
@@ -328,6 +330,11 @@ int main()
 			{
 				selectObstacle(obj.sprite); // Seleciona um novo obstáculo
 			}
+			else
+			{
+				// seta a visibilidade para true novamente
+        		obj.isVisible = true;
+			}
 		}
 
 		if (obj.isCoin)
@@ -335,9 +342,18 @@ int main()
 			animateCoin(obj.sprite, obj, deltaTime, timeSinceLastFrame);  // Anima a moeda
 		}
 
-		drawSprite(obj.sprite, shaderID);
+		if (obj.isVisible)
+		{
+			drawSprite(obj.sprite, shaderID);
+		}
+		
+		// Verifica colisão com moedas
+		if (obj.isCoin && checkCollision(character, obj) && obj.isVisible)
+		{
+			obj.isVisible = false;
+		}
 
-		// Verifica colisão
+		// Verifica colisão com lapides
 		if (!obj.isCoin && checkCollision(character, obj))
 		{
 			std::cout << "GAME OVER!" << std::endl;
