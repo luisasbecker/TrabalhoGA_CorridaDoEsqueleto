@@ -123,7 +123,10 @@ void initFallingObjects(int numObjects, GLuint coinTexture, GLuint obstacleTextu
         
         obj.sprite.VAO = setupGeometry();
         obj.sprite.texID = obj.isCoin ? coinTexture : obstacleTexture;
-        obj.sprite.dimensions = vec3(50.0f, 50.0f, 0.0f);  // Tamanho genérico para moedas e obstáculos
+		if (obj.isCoin)
+        	obj.sprite.dimensions = vec3(50.0f, 50.0f, 0.0f);  // Tamanho para moedas
+		else
+			obj.sprite.dimensions = vec3(70.0f, 70.0f, 0.0f);  // Tamanho para obstaculos
         obj.sprite.position = vec3(objectPosition(WIDTH), maxY, 0.0f);  // Inicia no topo da tela
 
         fallingObjects.push_back(obj);
